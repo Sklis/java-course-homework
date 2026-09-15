@@ -102,24 +102,33 @@ public final class TestRunner {
 
         try {
             invokeInstanceHooks(beforeEachMethods, instance);
-            testMethod.setAccessible(true);
-            testMethod.invoke(instance);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            result = (cause instanceof TestAssertionError) ? TestResult.FAILED : TestResult.ERROR;
-            failure = cause;
-        } catch (ReflectiveOperationException e) {
+        } catch (RuntimeException e) {
+            // @BeforeEach упал - тестовый метод не запускаем вовсе, тест считается ошибочным.
             result = TestResult.ERROR;
-            failure = e;
+            failure = unwrap(e);
+        }
+
+        if (result == TestResult.SUCCESS) {
+            try {
+                testMethod.setAccessible(true);
+                testMethod.invoke(instance);
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                result = (cause instanceof TestAssertionError) ? TestResult.FAILED : TestResult.ERROR;
+                failure = cause;
+            } catch (ReflectiveOperationException e) {
+                result = TestResult.ERROR;
+                failure = e;
+            }
         }
 
         try {
             invokeInstanceHooks(afterEachMethods, instance);
         } catch (RuntimeException e) {
-            // Если сам тест прошёл, но упал @AfterEach - считаем тест ошибочным.
+            // Если до этого момента всё было хорошо, но упал @AfterEach - считаем тест ошибочным.
             if (result == TestResult.SUCCESS) {
                 result = TestResult.ERROR;
-                failure = e;
+                failure = unwrap(e);
             }
         }
 
@@ -196,6 +205,10 @@ public final class TestRunner {
                 throw new BadTestClassError("Ошибка при выполнении " + hook.getName(), e);
             }
         }
+    }
+
+    private static Throwable unwrap(RuntimeException e) {
+        return e.getCause() != null ? e.getCause() : e;
     }
 
     private static void invokeInstanceHooks(List<Method> hooks, Object instance) {

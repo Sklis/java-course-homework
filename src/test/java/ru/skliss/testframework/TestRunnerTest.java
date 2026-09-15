@@ -2,6 +2,7 @@ package ru.skliss.testframework;
 
 import org.junit.jupiter.api.DisplayName;
 import ru.skliss.testframework.annotation.AfterSuite;
+import ru.skliss.testframework.annotation.BeforeEach;
 import ru.skliss.testframework.annotation.BeforeSuite;
 import ru.skliss.testframework.annotation.Disabled;
 import ru.skliss.testframework.annotation.Order;
@@ -71,6 +72,19 @@ class TestRunnerTest {
     @DisplayName("Класс без конструктора без параметров -> BadTestClassError")
     void nonInstantiableClassIsRejected() {
         assertThrows(BadTestClassError.class, () -> TestRunner.runTests(FixtureNoDefaultConstructor.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("Падение @BeforeEach помечает тест как ERROR и не прерывает выполнение остальных тестов " +
+            "(регрессия: раньше исключение из @BeforeEach вылетало из runTests() необработанным)")
+    void failingBeforeEachIsReportedAsErrorInsteadOfCrashingTheRun() {
+        Map<TestResult, List<ru.skliss.testframework.model.Test>> report =
+                TestRunner.runTests(FixtureFailingBeforeEach.class);
+
+        assertEquals(2, report.get(TestResult.ERROR).size());
+        assertTrue(report.get(TestResult.SUCCESS).isEmpty());
+        report.get(TestResult.ERROR).forEach(t ->
+                assertTrue(t.getException() instanceof IllegalStateException));
     }
 
     // ---- Тестовые классы-фикстуры ----
@@ -165,6 +179,21 @@ class TestRunnerTest {
 
         @Test
         void t() {
+        }
+    }
+
+    static class FixtureFailingBeforeEach {
+        @BeforeEach
+        void setUp() {
+            throw new IllegalStateException("BeforeEach специально падает");
+        }
+
+        @Test
+        void t1() {
+        }
+
+        @Test
+        void t2() {
         }
     }
 }

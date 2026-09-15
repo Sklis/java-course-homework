@@ -50,6 +50,12 @@ src/test/java/ru/skliss/testframework/TestRunnerTest.java
   (соответственно `@BeforeEach`/`@AfterEach` для него тоже не вызываются).
 - Если тест бросил `TestAssertionError` → результат `FAILED`.
   Если тест бросил любое другое исключение → результат `ERROR`.
+- Если падает `@BeforeEach` — сам тестовый метод не запускается вовсе, тест
+  помечается `ERROR`, а `@AfterEach` всё равно пытается выполниться (для
+  очистки ресурсов). Если падает `@AfterEach` после успешного теста — тест
+  тоже помечается `ERROR`. Важно: падение хука никогда не прерывает
+  выполнение всего класса — оно превращается в `ERROR` только у текущего
+  теста, остальные тесты продолжают выполняться.
 
 ### Порядок выполнения тестов
 
@@ -85,3 +91,8 @@ mvn compile exec:java # собрать и запустить демо (SampleTes
   `SKIPPED`), порядок исполнения по `@Order`/`priority`, разовый вызов
   `@BeforeSuite`/`@AfterSuite`, а также все три сценария `BadTestClassError`
   (static `@Test`, не-static `@BeforeSuite`, отсутствие конструктора).
+- Отдельно есть регрессионный тест на падение `@BeforeEach`
+  (`failingBeforeEachIsReportedAsErrorInsteadOfCrashingTheRun`): раньше
+  исключение из `@BeforeEach` вылетало из `TestRunner.runTests()`
+  необработанным и обрушивало прогон всего класса вместо того, чтобы
+  аккуратно пометить один тест как `ERROR`. Исправлено.
