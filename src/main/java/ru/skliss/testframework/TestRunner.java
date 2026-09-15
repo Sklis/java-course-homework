@@ -102,10 +102,13 @@ public final class TestRunner {
 
         try {
             invokeInstanceHooks(beforeEachMethods, instance);
-        } catch (RuntimeException e) {
+        } catch (InvocationTargetException e) {
             // @BeforeEach упал - тестовый метод не запускаем вовсе, тест считается ошибочным.
             result = TestResult.ERROR;
-            failure = unwrap(e);
+            failure = e.getCause();
+        } catch (ReflectiveOperationException e) {
+            result = TestResult.ERROR;
+            failure = e;
         }
 
         if (result == TestResult.SUCCESS) {
@@ -124,11 +127,16 @@ public final class TestRunner {
 
         try {
             invokeInstanceHooks(afterEachMethods, instance);
-        } catch (RuntimeException e) {
+        } catch (InvocationTargetException e) {
             // Если до этого момента всё было хорошо, но упал @AfterEach - считаем тест ошибочным.
             if (result == TestResult.SUCCESS) {
                 result = TestResult.ERROR;
-                failure = unwrap(e);
+                failure = e.getCause();
+            }
+        } catch (ReflectiveOperationException e) {
+            if (result == TestResult.SUCCESS) {
+                result = TestResult.ERROR;
+                failure = e;
             }
         }
 
@@ -207,20 +215,17 @@ public final class TestRunner {
         }
     }
 
-    private static Throwable unwrap(RuntimeException e) {
-        return e.getCause() != null ? e.getCause() : e;
-    }
-
-    private static void invokeInstanceHooks(List<Method> hooks, Object instance) {
+    /**
+     * Вызывает объектные хуки ({@code @BeforeEach}/{@code @AfterEach}) по очереди.
+     * Метод сознательно НЕ ловит исключения рефлексии, а пробрасывает их как есть:
+     * что делать с упавшим хуком (это @BeforeEach или @AfterEach? продолжать ли
+     * выполнение теста?) решает вызывающий код ({@link #runSingleTest}), а не этот
+     * метод, у которого одна задача - вызвать переданные методы.
+     */
+    private static void invokeInstanceHooks(List<Method> hooks, Object instance) throws ReflectiveOperationException {
         for (Method hook : hooks) {
-            try {
-                hook.setAccessible(true);
-                hook.invoke(instance);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException("Ошибка при выполнении " + hook.getName(), e.getCause());
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException("Ошибка при выполнении " + hook.getName(), e);
-            }
+            hook.setAccessible(true);
+            hook.invoke(instance);
         }
     }
 }
