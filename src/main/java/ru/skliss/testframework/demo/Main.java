@@ -8,10 +8,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Точка входа для ручного запуска демонстрации: {@code mvn compile exec:java}.
+ * Точка входа для ручного запуска демонстрации.
+ *
+ * <p>Запуск: {@code mvn compile exec:java}
  */
 public class Main {
 
+    /**
+     * Запускает тесты из {@link SampleTestClass} и печатает сводный отчёт.
+     *
+     * <p>Для каждого возможного результата ({@link TestResult}) выводится
+     * количество тестов и детальная строка по каждому из них.
+     *
+     * @param args аргументы командной строки (не используются)
+     */
     public static void main(String[] args) {
         Map<TestResult, List<Test>> report = TestRunner.runTests(SampleTestClass.class);
 

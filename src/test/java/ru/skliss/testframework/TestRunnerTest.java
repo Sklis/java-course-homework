@@ -2,6 +2,7 @@ package ru.skliss.testframework;
 
 import org.junit.jupiter.api.DisplayName;
 import ru.skliss.testframework.annotation.AfterSuite;
+import ru.skliss.testframework.annotation.AfterEach;
 import ru.skliss.testframework.annotation.BeforeEach;
 import ru.skliss.testframework.annotation.BeforeSuite;
 import ru.skliss.testframework.annotation.Disabled;
@@ -72,6 +73,36 @@ class TestRunnerTest {
     @DisplayName("Класс без конструктора без параметров -> BadTestClassError")
     void nonInstantiableClassIsRejected() {
         assertThrows(BadTestClassError.class, () -> TestRunner.runTests(FixtureNoDefaultConstructor.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("Несколько @BeforeSuite → BadTestClassError")
+    void multipleBeforeSuiteIsRejected() {
+        assertThrows(BadTestClassError.class, () -> TestRunner.runTests(FixtureMultipleBeforeSuite.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("Несколько @AfterSuite → BadTestClassError")
+    void multipleAfterSuiteIsRejected() {
+        assertThrows(BadTestClassError.class, () -> TestRunner.runTests(FixtureMultipleAfterSuite.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("@Disabled без @Test → BadTestClassError")
+    void disabledWithoutTestIsRejected() {
+        assertThrows(BadTestClassError.class, () -> TestRunner.runTests(FixtureDisabledWithoutTest.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("priority=11 → BadTestClassError")
+    void outOfRangePriorityIsRejected() {
+        assertThrows(BadTestClassError.class, () -> TestRunner.runTests(FixtureInvalidPriority.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("@Order(0) → BadTestClassError")
+    void outOfRangeOrderIsRejected() {
+        assertThrows(BadTestClassError.class, () -> TestRunner.runTests(FixtureInvalidOrder.class));
     }
 
     @org.junit.jupiter.api.Test
@@ -195,5 +226,41 @@ class TestRunnerTest {
         @Test
         void t2() {
         }
+    }
+
+    static class FixtureMultipleBeforeSuite {
+        @BeforeSuite
+        static void before1() {}
+        @BeforeSuite
+        static void before2() {}
+        @Test
+        void t() {}
+    }
+
+    static class FixtureMultipleAfterSuite {
+        @AfterSuite
+        static void after1() {}
+        @AfterSuite
+        static void after2() {}
+        @Test
+        void t() {}
+    }
+
+    static class FixtureDisabledWithoutTest {
+        @Disabled
+        void notATest() {}
+        @Test
+        void t() {}
+    }
+
+    static class FixtureInvalidPriority {
+        @Test(priority = 11)
+        void t() {}
+    }
+
+    static class FixtureInvalidOrder {
+        @Test
+        @Order(0)
+        void t() {}
     }
 }
