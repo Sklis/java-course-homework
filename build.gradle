@@ -4,7 +4,11 @@ plugins {
 }
 
 group = 'ru.skliss'
-version = '1.0'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -15,10 +19,16 @@ application {
     mainClass = 'ru.skliss.StreamHomework'
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(JavaExec) {
-    jvmArgs '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8'
+tasks.named('run') {
+    standardOutput = System.out
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes 'Main-Class': 'ru.skliss.StreamHomework'
+    }
 }
