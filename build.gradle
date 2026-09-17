@@ -25,10 +25,12 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.named('run') {
     standardOutput = System.out
+    jvmArgs '-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8'
 }
 
 tasks.named('jar') {
     manifest {
         attributes 'Main-Class': 'ru.skliss.StreamHomework'
     }
+
 }

@@ -46,9 +46,9 @@ public class StreamHomework {
     /** ---------------------------------------------------------------------
      3. Имена 3 самых старших "Инженер", по убыванию возраста
      --------------------------------------------------------------------- */
-    static List<String> topThreeOldestEngineerNames(List<Employee> employees, String s) {
+    static List<String> topThreeOldestEngineerNames(List<Employee> employees, String position) {
         return employees.stream()
-                .filter(e -> e.position().equals(s))
+                .filter(e -> e.position().equals(position))
                 .sorted(Comparator.comparingInt(Employee::age).reversed())
                 .limit(3)
                 .map(Employee::name)
@@ -58,9 +58,9 @@ public class StreamHomework {
     /** ---------------------------------------------------------------------
      4. Средний возраст сотрудников с должностью "Инженер"
      --------------------------------------------------------------------- */
-    static double averageAgeOfEngineers(List<Employee> employees, String s) {
+    static double averageAgeOfEngineers(List<Employee> employees, String position) {
         return employees.stream()
-                .filter(e -> e.position().equals(s))
+                .filter(e -> e.position().equals(position))
                 .mapToInt(Employee::age)
                 .average()
                 .orElse(0.0);
@@ -110,7 +110,7 @@ public class StreamHomework {
      --------------------------------------------------------------------- */
     public static void main(String[] args) {
 
-        // 1- е задание
+        // 1-е задание
         System.out.println("=== 1. 3-е наибольшее число (с повторами) ===");
         List<Integer> numbers = List.of(5, 2, 10, 9, 4, 3, 10, 1, 13);
         System.out.println("Вход: " + numbers);
@@ -150,8 +150,9 @@ public class StreamHomework {
         System.out.println("=== 5. Самое длинное слово в списке ===");
         List<String> words = List.of("кот", "программирование", "стрим", "java", "функциональный");
         System.out.println("Вход: " + words);
-        System.out.println("Результат: " + longestWord(words).orElse(null));
-        System.out.println("Количество символов: " + longestWord(words).orElse(null).length());
+        String longest5 = longestWord(words).orElse(null);
+        System.out.println("Результат: " + longest5);
+        System.out.println("Количество символов: " + longest5.length());
 
         // 6-е задание
         System.out.println();
@@ -176,8 +177,9 @@ public class StreamHomework {
                 "маленький кот спит на окне"
         };
         System.out.println("Вход: " + Arrays.toString(phrases));
-        System.out.println("Результат: " + longestWordInArrayOfPhrases(phrases).orElse(null));
-        System.out.printf("Количество символов: " + longestWordInArrayOfPhrases(phrases).orElse(null).length());
+        String longest8 = longestWordInArrayOfPhrases(phrases).orElse(null);
+        System.out.println("Результат: " + longest8);
+        System.out.println("Количество символов: " + longest8.length());
 
         // Финиш
     }
