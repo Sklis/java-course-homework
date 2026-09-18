@@ -114,13 +114,13 @@ public class StreamHomework {
         System.out.println("=== 1. 3-е наибольшее число (с повторами) ===");
         List<Integer> numbers = List.of(5, 2, 10, 9, 4, 3, 10, 1, 13);
         System.out.println("Вход: " + numbers);
-        System.out.println("Результат: " + thirdLargest(numbers).orElse(null)); // 10
+        System.out.println("Результат: " + thirdLargest(numbers).map(Object::toString).orElse("Данных нет: список содержит менее 3 элементов")); // 10
 
         //2-е задание
         System.out.println();
         System.out.println("=== 2. 3-е наибольшее уникальное число ===");
         System.out.println("Вход: " + numbers);
-        System.out.println("Результат: " + thirdLargestUnique(numbers).orElse(null)); // 9
+        System.out.println("Результат: " + thirdLargestUnique(numbers).map(Object::toString).orElse("Данных нет: список содержит менее 3 уникальных элементов")); // 9
 
         // 3-е задание
         System.out.println();
@@ -150,9 +150,13 @@ public class StreamHomework {
         System.out.println("=== 5. Самое длинное слово в списке ===");
         List<String> words = List.of("кот", "программирование", "стрим", "java", "функциональный");
         System.out.println("Вход: " + words);
-        String longest5 = longestWord(words).orElse(null);
-        System.out.println("Результат: " + longest5);
-        System.out.println("Количество символов: " + longest5.length());
+        longestWord(words).ifPresentOrElse(
+                longest5 -> {
+                    System.out.println("Результат: " + longest5);
+                    System.out.println("Количество символов: " + longest5.length());
+                },
+                () -> System.out.println("Данных нет: список слов пуст")
+        );
 
         // 6-е задание
         System.out.println();
@@ -177,9 +181,13 @@ public class StreamHomework {
                 "маленький кот спит на окне"
         };
         System.out.println("Вход: " + Arrays.toString(phrases));
-        String longest8 = longestWordInArrayOfPhrases(phrases).orElse(null);
-        System.out.println("Результат: " + longest8);
-        System.out.println("Количество символов: " + longest8.length());
+        longestWordInArrayOfPhrases(phrases).ifPresentOrElse(
+                longest8 -> {
+                    System.out.println("Результат: " + longest8);
+                    System.out.println("Количество символов: " + longest8.length());
+                },
+                () -> System.out.println("Данных нет: массив фраз пуст")
+        );
 
         // Финиш
     }
